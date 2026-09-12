@@ -42,6 +42,18 @@ const Dashboard = () => {
     navigate("/app/builder/res123");
   }
 
+  const editTitle = async (event) => {
+    event.preventDefault()
+  }
+
+  const deleteResume = async (resumeId) => {
+    const confirm = window.confirm('Are you sure you want to delete this resume?')
+
+    if(confirm) {
+      setAllResumes(prev => prev.filter(resume => resume._id !== resumeId))
+    }
+  }
+
   useEffect(() => {
     loadResumeData();
   }, []);
@@ -104,19 +116,19 @@ const Dashboard = () => {
                 className="relative w-[150px] h-[180px] rounded-[8px] border flex flex-col items-center justify-center gap-2 shadow-[0_10px_25px_rgba(0,0,0,0.05)] hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200 cursor-pointer outline-none group"
               >
                 {/* Edit and Delete Icons */}
-                <div className="absolute top-2 right-2 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <div onClick={e => e.stopPropagation()} className="absolute top-2 right-2 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                   <span
                     className="p-1 rounded hover:bg-white/60 transition-colors"
                     style={{ color: baseColor }}
                   >
-                    <Trash2 size={14} />
+                    <Trash2 size={14} onClick={() => deleteResume(resume._id)} />
                   </span>
 
                   <span
                     className="p-1 rounded hover:bg-white/60 transition-colors"
                     style={{ color: baseColor }}
                   >
-                    <Pencil size={14} />
+                    <Pencil size={14} onClick={() => {setEditResumeId(resume._id); setTitle(resume.title);}}/>
                   </span>
                 </div>
 
@@ -247,6 +259,51 @@ const Dashboard = () => {
               className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
             >
               Upload Resume
+            </button>
+          </form>
+        </div>
+      )}
+
+      {editResumeId && (
+        <div
+          onClick={() => {
+            setEditResumeId('');
+            setTitle("");
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+        >
+          <form
+            onSubmit={editTitle}
+            onClick={(e) => e.stopPropagation()}
+            className="relative bg-slate-50 border shadow-md rounded-lg w-full max-w-sm p-6"
+          >
+            {/* Close Icon */}
+            <XIcon
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"
+              onClick={() => {
+                setEditResumeId('');
+                setTitle("");
+              }}
+            />
+
+            <h2 className="text-xl font-bold mb-4">Edit Resume Title</h2>
+
+            {/* Resume Title */}
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter resume title"
+              className="w-full px-4 py-2 mb-4 border border-slate-300 rounded focus:border-green-600 focus:ring-1 focus:ring-green-600 outline-none"
+              required
+            />
+
+            {/* Create Button */}
+            <button
+              type="submit"
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
+            >
+              Update
             </button>
           </form>
         </div>
