@@ -10,14 +10,23 @@ import {
 } from "lucide-react";
 import { dummyResumeData } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import api from "../configs/api";
+import toast from "react-hot-toast";
+import pdfToText from 'react-pdftotext';
 
 const Dashboard = () => {
+
+  const {user, token} = useSelector(state => state.auth)
+
   const [allResumes, setAllResumes] = useState([]);
   const [showCreateResume, setShowCreateResume] = useState(false);
   const [showUploadResume, setShowUploadResume] = useState(false);
   const [title, setTitle] = useState("");
   const [resume, setResume] = useState(null);
   const [editResumeId, setEditResumeId] = useState("");
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -26,20 +35,34 @@ const Dashboard = () => {
   };
 
   const createResume = async (event) => {
-    event.preventDefault();
-
-    console.log("Resume Title:", title);
-
-    setShowCreateResume(false);
-    setTitle("");
-
-    navigate("/app/builder/res123");
+    try {
+      event.preventDefault();
+      const {data} = await api.post('/api/resumes/create', {title}, {headers: {Authorization: token}})
+      setAllResumes([...allResumes, data.resume])
+      setTitle('')
+      navigate(`/app/builder/${data.resume._id}`)
+    } catch (error) {
+      toast.error(error?.response?.data?.message || error.message)
+    }
   };
 
   const uploadResume = async (event) => {
     event.preventDefault();
-    setShowUploadResume(false);
-    navigate("/app/builder/res123");
+    setIsLoading(true);
+    try {
+      const resumeText = await pdfToText(resume);
+      const {data} = await api.post('/api/ai/upload-resume', {title, resumeText}, {headers: {Authorization: token}})
+      console.log(data)
+      setTitle('')
+      setResume(null)
+      setShowUploadResume(false)
+      navigate(`/app/builder/${data.resume._id}`)
+    } catch (error) {
+      console.log(error.message)
+      toast.error(error?.response?.data?.message || error.message)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const editTitle = async (event) => {
