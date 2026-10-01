@@ -1,14 +1,27 @@
 import React from "react"
 import { Lock, Mail, User2Icon } from "lucide-react"
+import api from "../configs/api"
+import { useDispatch, useSelector } from "react-redux"
+import { login } from "../app/features/authSlice"
+import toast from "react-hot-toast"
 
 const Login = () => {
   const query = new URLSearchParams(window.location.search)
   const stateQuery = query.get("state")
   const [state, setState] = React.useState(stateQuery === "SignUp" ? "register" : "login")
   const [formData, setFormData] = React.useState({ name: '', email: '', password: '' })
+  const dispatch = useDispatch()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    try {
+      const {data} = await api.post(`/api/users/${state}`, formData)
+      dispatch(login(data))
+      localStorage.setItem('token', data.token)
+      toast.success(data.message)
+    } catch(error) {
+      toast(error?.response?.data?.message || error.message)
+    }
   }
 
   const handleChange = (e) => {
