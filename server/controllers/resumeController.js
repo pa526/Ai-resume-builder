@@ -87,7 +87,7 @@ export const updateResume = async(req, res) => {
         const {resumeId, resumeData, removeBackground} = req.body;
         const image = req.file;
 
-        let resumeDataCopy = JSON.parse(resumeData);
+        let resumeDataCopy = JSON.parse(JSON.stringify(resumeData));
 
         if(image) {
 
@@ -111,6 +111,7 @@ export const updateResume = async(req, res) => {
         return res.status(200).json({message: 'Saved successfully', resume})
 
     } catch(error) {
+        console.log(error.message)
         return res.status(400).json({message: error.message})
     }
 }

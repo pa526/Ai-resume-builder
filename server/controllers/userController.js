@@ -104,12 +104,15 @@ export const getUserById = async(req, res) => {
 //GET: /api/users/resumes
 export const getUserResumes = async(req, res) => {
     try {
-        const {userId} = req.userId;
+        const userId = req.userId;
+        // console.log(userId)
 
         const userResume = await Resume.find({userId})
+        // console.log(userResume);
 
         return res.status(200).json({userResume})
     } catch(error) {
+        console.log(error.message)
         return res.status(400).json({message: error.message})
     }
 }
