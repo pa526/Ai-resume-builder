@@ -27,6 +27,7 @@ import ProjectForm from "../components/ProjectForm";
 import SkillsForm from "../components/skillsForm";
 import { useSelector } from "react-redux";
 import api from "../configs/api";
+import toast from "react-hot-toast";
 
 const ResumeBuilder = () => {
   const { resumeId } = useParams();
@@ -78,7 +79,18 @@ const ResumeBuilder = () => {
   }, []);
 
   const changeResumeVisibility = async () => {
-    setResumeData({...resumeData, public: !resumeData.public})
+    try {
+      const formData = new FormData()
+      formData.append('resumeId', resumeId)
+      formData.append('resumeData', JSON.stringify({public: !resumeData.public}))
+
+      const {data} = await api.put('/api/resumes/update/', formData, {headers: {Authorization: token}})
+
+      setResumeData({...resumeData, public: !resumeData.public})
+      toast.success(data.message)
+    } catch(error) {
+      console.error('Error saving resume:', error)
+    }
   }
 
   const handleShare = () => {
@@ -95,6 +107,30 @@ const ResumeBuilder = () => {
 
   const downloadResume = () => {
     window.print();
+  }
+
+  const saveResume = async() => {
+    try {
+      let updatedResumeData = structuredClone(resumeData)
+
+      //remove image from updatedResumeData
+      if(typeof resumeData.personal_info.image === 'object') {
+        delete updatedResumeData.personal_info.image
+      }
+
+      const formData = new FormData()
+      formData.append('resumeId', resumeId)
+      formData.append('resumeData', JSON.stringify(updatedResumeData))
+      removeBackground && formData.append('removeBackground', "yes");
+      typeof resumeData.personal_info.image === 'object' && formData.append('image', resumeData.personal_info.image)
+
+      const {data} = await api.put('/api/resumes/update', formData, {headers: {Authorization: token}})
+
+      setResumeData(data.resume)
+      toast.success(data.message)
+    } catch(error) {
+      console.error("Error saving resume:", error)
+    }
   }
 
   return (
@@ -178,7 +214,7 @@ const ResumeBuilder = () => {
                     <SkillsForm data={resumeData.skills} onChange={(data) => setResumeData(prev => ({...prev, skills: data}))}/>
                   )}
               </div>
-              <button className="bg-gradient-to-br from-green-100 to-green-200 ring-green-300 text-green-600 ring hover:ring-green-400 transition-all rounded-md px-6 py-2 mt-6 text-sm">
+              <button onClick={() => {toast.promise(saveResume, {loading: 'Saving...'})}} className="bg-gradient-to-br from-green-100 to-green-200 ring-green-300 text-green-600 ring hover:ring-green-400 transition-all rounded-md px-6 py-2 mt-6 text-sm">
                 Save Changes
               </button>
             </div>
