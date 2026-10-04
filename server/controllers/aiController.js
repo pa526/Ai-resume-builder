@@ -39,6 +39,7 @@ export const enhanceProfessionalSummary = async (req, res) => {
 export const enhanceJobDescription = async (req, res) => {
   try {
     const { jobContent } = req.body;
+    console.log(jobContent)
     if (!jobContent) {
       return res.status(400).json({ message: "Missing required fields" });
     }
@@ -62,6 +63,7 @@ export const enhanceJobDescription = async (req, res) => {
       .status(200)
       .json({ message: response.choices[0].message.content });
   } catch (error) {
+    console.log(error.message)
     return res.status(400).json(error.message);
   }
 };
