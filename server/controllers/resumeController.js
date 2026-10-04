@@ -73,7 +73,7 @@ export const getPublicResumeById = async(req, res) => {
             return res.status(404).json({message: "Resume not found"})
         }
 
-        return res.status(404).json({publicResume})
+        return res.status(200).json({publicResume})
     } catch(error) {
         return res.status(400).json(error.message)
     }
